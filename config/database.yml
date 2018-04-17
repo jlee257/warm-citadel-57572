@@ -24,6 +24,9 @@ default: &default
 development:
   <<: *default
   database: spayserver_development
+  username: postgres
+  password: 37192730
+  timeout: 5000
 
   # The specified database role being used to connect to postgres.
   # To create additional roles in postgres see `$ createuser --help`.
