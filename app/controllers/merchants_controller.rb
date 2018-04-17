@@ -4,21 +4,19 @@ class MerchantsController < ApplicationController
 
 	# GET /merchants
 	def index
-		@merchants = Merchant.find_by merchant_id: 'merchants'
+		@merchants = Merchant.find_by merchant_id: "merchants"
 
-		if @merchant.nil? 
-			puts "!!!!!!!!!!!!!!!!!! merchant is nil"
-
+		if @merchants.nil? 
+			puts "! merchant is nil"
 			response = fetch_server
 
 			if !response.is_a? Net::HTTPSuccess
-				puts "response body empty"
 				render json: { :errors => response.message }, status: response.code
 				return
 			end
 
 			m = Merchant.new
-			m.merchant_id = params[:id]
+			m.merchant_id = "merchants"
 			m.merchant_info = response.body
 
 			if m.save
@@ -27,30 +25,31 @@ class MerchantsController < ApplicationController
 				render json: { :errors => m.errors.full_messages }, status: 422
 			end
 
-		elsif @merchant.updated_at < 10.minute.ago
-			puts "!!!!!!!!!!!!!!!!!! merchant is outdated"
 
+		elsif @merchants.updated_at < 12.hour.ago
+			puts "! merchant is outdated " + @merchants.updated_at.to_s + " " + 1.second.ago.to_s
 			response = fetch_server
 
 			if !response.is_a? Net::HTTPSuccess
-				puts "response body empty"
 				render json: { :errors => response.message }, status: response.code
 				return
 			end
 
-			@merchant.merchant_info = response.body
+			@merchants.merchant_info = response.body
 
-			if @merchant.save
-				render json: @merchant.merchant_info, status: :ok
+			if @merchants.save
+				@merchants.touch unless @merchants.changed?
+				render json: @merchants.merchant_info, status: :ok
 			else
-				render json: { :errors => @merchant.errors.full_messages }, status: 422
+				render json: { :errors => @merchants.errors.full_messages }, status: 422
 			end
+
+
 		else
-			puts "!!!!!!!!!!!!!!!!!! merchant is up to date"
-
+			puts "! merchant is up to date " + @merchants.updated_at.to_s + " " + 1.second.ago.to_s
 			render json: @merchants.merchant_info, status: :ok
-		end
 
+		end
 	end
 
 
@@ -59,12 +58,10 @@ class MerchantsController < ApplicationController
 		@merchant = Merchant.find_by merchant_id: params[:id]
 
 		if @merchant.nil? 
-			puts "!!!!!!!!!!!!!!!!!! merchant is nil"
-
+			puts "! merchant is nil"
 			response = fetch_server params[:id]
 
 			if !response.is_a? Net::HTTPSuccess
-				puts "response body empty"
 				render json: { :errors => response.message }, status: response.code
 				return
 			end
@@ -79,13 +76,12 @@ class MerchantsController < ApplicationController
 				render json: { :errors => m.errors.full_messages }, status: 422
 			end
 
-		elsif @merchant.updated_at < 10.minute.ago
-			puts "!!!!!!!!!!!!!!!!!! merchant is outdated"
 
+		elsif @merchant.updated_at < 12.hour.ago
+			puts "! merchant is outdated " + @merchant.updated_at.to_s + " " + 1.second.ago.to_s
 			response = fetch_server params[:id]
 
 			if !response.is_a? Net::HTTPSuccess
-				puts "response body empty"
 				render json: { :errors => response.message }, status: response.code
 				return
 			end
@@ -93,14 +89,15 @@ class MerchantsController < ApplicationController
 			@merchant.merchant_info = response.body
 
 			if @merchant.save
+				@merchant.touch unless @merchant.changed?
 				render json: @merchant.merchant_info, status: :ok
 			else
 				render json: { :errors => @merchant.errors.full_messages }, status: 422
 			end
 
-		else
-			puts "!!!!!!!!!!!!!!!!!! merchant is up to date"
 
+		else
+			puts "! merchant is up to date " + @merchant.updated_at.to_s + " " + 1.second.ago.to_s
 			render json: @merchant.merchant_info, status: :ok
 		end
 	end
